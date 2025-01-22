@@ -58,6 +58,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import java.util.zip.GZIPInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
 public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.Callback {
 
   public Integer BarcodeFormats;
@@ -372,6 +377,10 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
                       value = new String(barcode.getRawBytes(), StandardCharsets.US_ASCII);
                     }
 
+                    if (value.equals("Unknown encoding")) {
+                      value = unzipBytes(barcode.getRawBytes());
+                    }
+
                     data.putExtra(BarcodeFormat, barcode.getFormat());
                     data.putExtra(BarcodeType, barcode.getValueType());
                     data.putExtra(BarcodeValue, value);
@@ -398,6 +407,25 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
 
     camera = cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, imageAnalysis, preview);
   }
+
+  public static String unzipBytes(byte[] byteArray) {
+    if (byteArray == null ) {
+        return null;
+    }
+    try{
+        GZIPInputStream gzis = new GZIPInputStream(new ByteArrayInputStream(byteArray));
+        BufferedReader bfr = new BufferedReader(new InputStreamReader(gzis, "UTF-8"));
+        String outputString = "";
+        String line;
+        while ((line=bfr.readLine())!=null) {
+          outputString += line;
+        }
+        return outputString;
+    } catch(Exception ex) {
+        return "Unzip error";
+    }
+
+ }
 
   /**
    * For drawing the rectangular box
