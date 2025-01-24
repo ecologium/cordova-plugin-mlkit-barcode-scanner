@@ -1,6 +1,7 @@
 @import MLKitBarcodeScanning;
 
 #import "CDViOSScanner.h"
+#import "zlib.h"
 
 @class UIViewController;
 
@@ -95,6 +96,17 @@
         value = [[NSString alloc] initWithData:barcode.rawData encoding:NSASCIIStringEncoding];
     }
 
+    if([value isEqualToString:@"Unknown encoding"])
+    {
+        NSData* unzippedData = gzipUncompressData(barcode.rawData);
+        if (unzippedData) {
+            value = [[NSString alloc] initWithData:unzippedData encoding:NSUTF8StringEncoding];
+            if (!value) {
+                value = [[NSString alloc] initWithData:unzippedData encoding:NSASCIIStringEncoding];
+            }
+        }
+    }
+
     NSArray* response = @[value, @(barcode.format), @(barcode.valueType)];
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:response];
 
@@ -102,6 +114,30 @@
 
     [self resetOrientation];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:_callback];
+}
+
+  NSData *gzipUncompressData(NSData *compressedData)
+{
+    if (compressedData.length == 0) return nil;
+
+    uLong uncompressedLength = compressedData.length * 3; // Estimate
+    NSMutableData *uncompressedData = [NSMutableData dataWithLength:uncompressedLength];
+
+    z_stream stream;
+    stream.zalloc = Z_NULL;
+    stream.zfree = Z_NULL;
+    stream.opaque = Z_NULL;
+    stream.avail_in = (uInt)compressedData.length;
+    stream.next_in = (Bytef *)compressedData.bytes;
+    stream.avail_out = (uInt)uncompressedData.length;
+    stream.next_out = (Bytef *)uncompressedData.mutableBytes;
+
+    inflateInit2(&stream, 16 + MAX_WBITS); // Gzip decoding
+    inflate(&stream, Z_FINISH);
+    inflateEnd(&stream);
+
+    [uncompressedData setLength:stream.total_out];
+    return uncompressedData;
 }
 
 - (void)playBeep
