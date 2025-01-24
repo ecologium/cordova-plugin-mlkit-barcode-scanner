@@ -96,15 +96,26 @@
         value = [[NSString alloc] initWithData:barcode.rawData encoding:NSASCIIStringEncoding];
     }
 
-    if([value isEqualToString:@"Unknown encoding"])
+    if(value.length > 100)
     {
+      @try {
         NSData* unzippedData = [self gzipUncompressData:barcode.rawData];
         if (unzippedData) {
-            value = [[NSString alloc] initWithData:unzippedData encoding:NSUTF8StringEncoding];
-            if (!value) {
-                value = [[NSString alloc] initWithData:unzippedData encoding:NSASCIIStringEncoding];
-            }
+          NSLog(@"Unzip OK");
+          NSString* unzippedValue = [[NSString alloc] initWithData:unzippedData encoding:NSUTF8StringEncoding];
+          if (!unzippedValue) {
+            unzippedValue = [[NSString alloc] initWithData:unzippedData encoding:NSASCIIStringEncoding];
+          }
+          if(unzippedValue.length > 0){
+            value = unzippedValue;
+          }
+        } else {
+          NSLog(@"Unzip not OK");
         }
+      }
+      @catch (NSException *ex) {
+        NSLog(@"Unzip exception");
+      }
     }
 
     NSArray* response = @[value, @(barcode.format), @(barcode.valueType)];
@@ -136,7 +147,9 @@
     stream.next_out = (Bytef *)uncompressedData.mutableBytes;
 
     int status;
+    int maxLoops = 20;
     do {
+        maxLoops--;
         status = inflate(&stream, Z_NO_FLUSH);
         if (status == Z_STREAM_ERROR) {
             inflateEnd(&stream);
@@ -149,7 +162,7 @@
             stream.avail_out = (uInt)(uncompressedData.length - stream.total_out);
             stream.next_out = (Bytef *)(uncompressedData.mutableBytes + stream.total_out);
         }
-    } while (status != Z_STREAM_END);
+    } while (status != Z_STREAM_END && maxLoops > 0);
 
     inflateEnd(&stream);
     [uncompressedData setLength:stream.total_out];
