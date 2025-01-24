@@ -98,7 +98,7 @@
 
     if([value isEqualToString:@"Unknown encoding"])
     {
-        NSData* unzippedData = gzipUncompressData(barcode.rawData);
+        NSData* unzippedData = [self gzipUncompressData:barcode.rawData];
         if (unzippedData) {
             value = [[NSString alloc] initWithData:unzippedData encoding:NSUTF8StringEncoding];
             if (!value) {
@@ -116,25 +116,31 @@
     [self.commandDelegate sendPluginResult:pluginResult callbackId:_callback];
 }
 
-  NSData *gzipUncompressData(NSData *compressedData)
-{
+- (NSData *)gzipUncompressData:(NSData *)compressedData {
     if (compressedData.length == 0) return nil;
 
-    uLong uncompressedLength = compressedData.length * 3; // Estimate
-    NSMutableData *uncompressedData = [NSMutableData dataWithLength:uncompressedLength];
-
     z_stream stream;
+    bzero(&stream, sizeof(stream));
     stream.zalloc = Z_NULL;
     stream.zfree = Z_NULL;
     stream.opaque = Z_NULL;
     stream.avail_in = (uInt)compressedData.length;
     stream.next_in = (Bytef *)compressedData.bytes;
+
+    if (inflateInit2(&stream, 16 + MAX_WBITS) != Z_OK) {
+        return nil;
+    }
+
+    NSMutableData *uncompressedData = [NSMutableData dataWithLength:compressedData.length * 3];
     stream.avail_out = (uInt)uncompressedData.length;
     stream.next_out = (Bytef *)uncompressedData.mutableBytes;
 
-    inflateInit2(&stream, 16 + MAX_WBITS); // Gzip decoding
-    inflate(&stream, Z_FINISH);
+    int status = inflate(&stream, Z_FINISH);
     inflateEnd(&stream);
+
+    if (status != Z_STREAM_END) {
+        return nil;
+    }
 
     [uncompressedData setLength:stream.total_out];
     return uncompressedData;
