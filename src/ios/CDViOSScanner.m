@@ -131,17 +131,27 @@
         return nil;
     }
 
-    NSMutableData *uncompressedData = [NSMutableData dataWithLength:compressedData.length * 3];
+    NSMutableData *uncompressedData = [NSMutableData dataWithLength:compressedData.length * 4]; // Increased multiplier
     stream.avail_out = (uInt)uncompressedData.length;
     stream.next_out = (Bytef *)uncompressedData.mutableBytes;
 
-    int status = inflate(&stream, Z_FINISH);
+    int status;
+    do {
+        status = inflate(&stream, Z_NO_FLUSH);
+        if (status == Z_STREAM_ERROR) {
+            inflateEnd(&stream);
+            return nil;
+        }
+
+        if (status == Z_BUF_ERROR || status == Z_OK) {
+            // Resize buffer and continue
+            [uncompressedData setLength:uncompressedData.length * 2];
+            stream.avail_out = (uInt)(uncompressedData.length - stream.total_out);
+            stream.next_out = (Bytef *)(uncompressedData.mutableBytes + stream.total_out);
+        }
+    } while (status != Z_STREAM_END);
+
     inflateEnd(&stream);
-
-    if (status != Z_STREAM_END) {
-        return nil;
-    }
-
     [uncompressedData setLength:stream.total_out];
     return uncompressedData;
 }
