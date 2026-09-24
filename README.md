@@ -2,26 +2,16 @@
 
 ## Purpose of this Project
 
-The purpose of this project is to provide a barcode scanner utilizing the Google ML Kit Vision library for the Cordova framework on iOS and Android.
+The purpose of this project is to provide a barcode scanner utilizing the Google ML Kit Vision library for the Cordova framework on iOS.
 The MLKit library is incredibly performant and fast in comparison to any other barcode reader that I have used that are free.
+
+This plugin installs native code on iOS only. It is not installed on Android.
 
 ## Plugin Dependencies
 
-| Dependency                        | Version   | Info                       |
-| --------------------------------- | --------- | -------------------------- |
-| `cordova-android`                 | `>=8.0.0` |                            |
-| `cordova-ios`                     | `>=4.5.0` |                            |
-| `cordova-plugin-androidx`         | ` ^3.0.0` | If cordova-android < 9.0.0 |
-| `cordova-plugin-androidx-adapter` | ` ^1.1.3` |                            |
-
-## Prerequisites
-
-If your `cordova-android` version is below `9.0.0`, you have to install `cordova-plugin-androidx` first before installing this plugin.
-Execute this command in your terminal:
-
-```bash
-npx cordova plugin add cordova-plugin-androidx
-```
+| Dependency    | Version   | Info |
+| ------------- | --------- | ---- |
+| `cordova-ios` | `>=4.5.0` |      |
 
 ## Installation
 
@@ -33,34 +23,33 @@ npx cordova plugin add cordova-plugin-mlkit-barcode-scanner
 
 ## Supported Platforms
 
-- Android
 - iOS/iPadOS
 
 ## Barcode Support
 
-| 1d formats   | Android | iOS |
-| ------------ | ------- | --- |
-| Codabar      | ✓       | ✓   |
-| Code 39      | ✓       | ✓   |
-| Code 93      | ✓       | ✓   |
-| Code 128     | ✓       | ✓   |
-| EAN-8.       | ✓       | ✓   |
-| EAN-13       | ✓       | ✓   |
-| ITF          | ✓       | ✓   |
-| MSI          | ✗       | ✗   |
-| RSS Expanded | ✗       | ✗   |
-| RSS-14       | ✗       | ✗   |
-| UPC-A        | ✓       | ✓   |
-| UPC-E        | ✓       | ✓   |
+| 1d formats   | iOS |
+| ------------ | --- |
+| Codabar      | ✓   |
+| Code 39      | ✓   |
+| Code 93      | ✓   |
+| Code 128     | ✓   |
+| EAN-8.       | ✓   |
+| EAN-13       | ✓   |
+| ITF          | ✓   |
+| MSI          | ✗   |
+| RSS Expanded | ✗   |
+| RSS-14       | ✗   |
+| UPC-A        | ✓   |
+| UPC-E        | ✓   |
 
-| 2d formats  | Android | iOS |
-| ----------- | ------- | --- |
-| Aztec       | ✓       | ✓   |
-| Codablock   | ✗       | ✗   |
-| Data Matrix | ✓       | ✓   |
-| MaxiCode    | ✗       | ✗   |
-| PDF417      | ✓       | ✓   |
-| QR Code     | ✓       | ✓   |
+| 2d formats  | iOS |
+| ----------- | --- |
+| Aztec       | ✓   |
+| Codablock   | ✗   |
+| Data Matrix | ✓   |
+| MaxiCode    | ✗   |
+| PDF417      | ✓   |
+| QR Code     | ✓   |
 
 :information_source: Note that this API does not recognize barcodes in these forms:
 
@@ -190,13 +179,7 @@ Prepare Cordova:
 cordova prepare && cordova plugin add ../../ --link --force
 ```
 
-Build and run the project Android:
-
-```
-cordova build android && cordova run android
-```
-
-and iOS:
+Build and run the project on iOS:
 
 ```
 cordova build ios && cordova run ios

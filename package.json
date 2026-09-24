@@ -5,14 +5,12 @@
   "cordova": {
     "id": "cordova-plugin-mlkit-barcode-scanner",
     "platforms": [
-      "android",
       "ios"
     ]
   },
   "keywords": [
     "ecosystem:cordova",
-    "cordova-ios",
-    "cordova-android"
+    "cordova-ios"
   ],
   "author": "Florian Biebel",
   "license": "MIT",
